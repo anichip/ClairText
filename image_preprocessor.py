@@ -1,10 +1,10 @@
 import cv2
 import numpy as np
 from PIL import Image
-# from pillow_heif import register_heif_opener
+from pillow_heif import register_heif_opener, read_heif
 import pytesseract
 
-# register_heif_opener()
+register_heif_opener()
 
 #PART A : OPENCV PREPROCESSING
 def preprocess_img(img_path):
@@ -141,13 +141,14 @@ def preprocess_image_to_text(img_path, use_easyocr=False):
 
 
 if __name__ == "__main__":
-    enh = preprocess_img("/Users/r3alistic/Programming/VibeCoding/ClairText/IMG_3521.jpg")
+    enh = preprocess_img("/Users/r3alistic/Programming/VibeCoding/ClairText/IMG_4228.HEIC")
     cv2.imwrite("out_enh.png", enh)
 
     #Test the full pipeline 
     print("=" * 50)
     print("EXTRACTED TEXT (Tesseract):")
     print("=" * 50)
-    text = preprocess_image_to_text("/Users/r3alistic/Programming/VibeCoding/ClairText/IMG_3521.jpg")
+    text = preprocess_image_to_text("/Users/r3alistic/Programming/VibeCoding/ClairText/IMG_4228.HEIC")
+    
     print(text)
     print("=" * 50)
