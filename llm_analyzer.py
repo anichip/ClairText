@@ -36,7 +36,7 @@ class LLMAnalyzer:
             "properties": {
                 "big_words": {
                     "type": "array",
-                    "maxItems": 10,
+                    "maxItems": 5,                      #For now, 5 new words each page to not overload the api. 
                     "items": {
                         "type": "object",
                         "properties": {
@@ -51,7 +51,10 @@ class LLMAnalyzer:
             },
             "required": ["big_words"],
             "additionalProperties": False
-}
+        }
+
+    def extract_from_image(self,image):
+        pass
 
 
     

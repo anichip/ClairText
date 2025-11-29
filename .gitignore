@@ -1,9 +1,30 @@
+# Old files
 llm_parser.py
-
 out_enh.png
-
 IMG_3521.jpg
 IMG_4227.HEIC
 IMG_4228.HEIC
-
 out_enh_goal.jpg
+
+# macOS
+.DS_Store
+
+# Xcode user-specific files
+xcuserdata/
+*.xcuserstate
+
+# Xcode build files
+DerivedData/
+build/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.egg-info/
+
+phases.md
