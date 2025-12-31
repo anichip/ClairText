@@ -1,9 +1,6 @@
-"""
-ClairText Flask Backend
-Receives text from Swift app and returns word analysis
-"""
-
 from flask import Flask, request, jsonify
+import word_analyzer
+import claude_generator
 
 app = Flask(__name__)
 
@@ -21,29 +18,20 @@ def analyze_text():
     text = data['text']
     print(f"Received {len(text)} characters of text")
 
-    # Dummy response - will be replaced with real analysis later
-    dummy_words = [
-        {
-            "word": "ambivalent",
-            "definition": "Having mixed feelings or contradictory ideas about something",
-            "example": "Like being hungry but not knowing what to eat - you want food but can't decide",
-            "difficulty": 0.8
-        },
-        {
-            "word": "ephemeral",
-            "definition": "Lasting for a very short time",
-            "example": "Like a Snapchat message that disappears - it's there briefly then gone",
-            "difficulty": 0.9
-        },
-        {
-            "word": "pragmatic",
-            "definition": "Dealing with things sensibly and realistically",
-            "example": "Like choosing sneakers over heels for a day of walking - practical choice",
-            "difficulty": 0.7
-        }
-    ]
+    # Step 1: Analyze text and get top 3 complex words
+    words = word_analyzer.analyze_text(text)
 
-    return jsonify({'words': dummy_words})
+    # Debug: print the words found
+    print(f"Found {len(words)} complex words:")
+    for w in words:
+        print(f"  - {w['word']} (difficulty: {w['difficulty']})")
+
+    # Step 2: Enrich words with Claude-generated definitions and examples
+    print("Enriching words with Claude Haiku...")
+    enriched_words = claude_generator.enrich_words(words, text)
+
+    print("Done! Sending enriched words to app.")
+    return jsonify({'words': enriched_words})
 
 @app.route('/health', methods=['GET'])
 def health():
