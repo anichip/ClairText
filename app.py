@@ -1,6 +1,7 @@
 from flask import Flask, request, jsonify
 import word_analyzer
 import claude_generator
+import database
 
 app = Flask(__name__)
 
@@ -37,6 +38,62 @@ def analyze_text():
 def health():
     """Health check endpoint"""
     return jsonify({'status': 'healthy'})
+
+@app.route('/master_word', methods=['POST'])
+def master_word_endpoint():
+    """
+    Mark a word as mastered (add to Cookie Jar)
+    """
+    data = request.get_json()
+
+    if not data or 'word' not in data:
+        return jsonify({'error': 'No word provided'}), 400
+
+    word = data['word']
+    difficulty = data.get('difficulty', 0.0)
+
+    success = database.master_word(word, difficulty)
+
+    if success:
+        return jsonify({'status': 'success', 'message': f'Word "{word}" mastered!'})
+    else:
+        return jsonify({'error': 'Failed to master word'}), 500
+
+@app.route('/save_word', methods=['POST'])
+def save_word_endpoint():
+    """
+    Save a word for later practice
+    """
+    data = request.get_json()
+
+    if not data or 'word' not in data:
+        return jsonify({'error': 'No word provided'}), 400
+
+    word = data['word']
+    difficulty = data.get('difficulty', 0.0)
+
+    success = database.save_word(word, difficulty)
+
+    if success:
+        return jsonify({'status': 'success', 'message': f'Word "{word}" saved for later!'})
+    else:
+        return jsonify({'error': 'Failed to save word'}), 500
+
+@app.route('/get_mastered_words', methods=['GET'])
+def get_mastered_words():
+    """
+    Get all mastered words (Cookie Jar contents)
+    """
+    words = database.get_mastered_words()
+    return jsonify({'words': words})
+
+@app.route('/get_saved_words', methods=['GET'])
+def get_saved_words():
+    """
+    Get all saved words (Save for Later contents)
+    """
+    words = database.get_saved_words()
+    return jsonify({'words': words})
 
 if __name__ == '__main__':
     # Run on all interfaces so iPhone can connect via local network

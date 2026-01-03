@@ -26,7 +26,7 @@ struct AnalyzeResponse: Codable {
 class APIService {
     // Change this to your Mac's local IP address when testing on device
     // Find it with: System Preferences → Network → your WiFi → IP address
-    private let baseURL = "http://10.0.0.116:5000"
+    private let baseURL = "http://192.168.86.59:5000"
 
     func analyzeText(_ text: String) async throws -> [WordResult] {
         guard let url = URL(string: "\(baseURL)/analyze_text") else {
