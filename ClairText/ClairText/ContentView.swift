@@ -23,6 +23,7 @@ struct ContentView: View {
     @State private var isProcessing: Bool = false
     @State private var wordResults: [WordResult] = []
     @State private var errorMessage: String?
+    @State private var hiddenWordIds: Set<UUID> = []
 
     private let apiService = APIService()
 
@@ -126,23 +127,47 @@ struct ContentView: View {
                 ScrollView {
                     VStack(spacing: 20) {
                         ForEach(wordResults) { wordResult in
-                            WordCardView(wordResult: wordResult)
+                            if !hiddenWordIds.contains(wordResult.id) {
+                                WordCardView(
+                                    wordResult: wordResult,
+                                    onMaster: { masterWord(wordResult) },
+                                    onSave: { saveWord(wordResult) }
+                                )
+                                .transition(.opacity)
+                            }
                         }
                     }
                     .padding(.horizontal)
+                    .animation(.easeOut(duration: 0.3), value: hiddenWordIds)
                 }
             }
 
-            Button(action: {
-                startOver()
-            }) {
-                Label("Start Over", systemImage: "arrow.counterclockwise")
-                    .font(.headline)
-                    .foregroundColor(.white)
-                    .padding()
-                    .background(Color.orange)
-                    .cornerRadius(10)
+            HStack(spacing: 16) {
+                Button(action: {
+                    startOver()
+                }) {
+                    Label("Start Over", systemImage: "arrow.counterclockwise")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.orange)
+                        .cornerRadius(10)
+                }
+
+                Button(action: {
+                    startOver()
+                }) {
+                    Label("Proceed", systemImage: "arrow.right")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(UIColor.darkGray))
+                        .cornerRadius(10)
+                }
             }
+            .padding(.horizontal)
         }
     }
 
@@ -195,11 +220,40 @@ struct ContentView: View {
         rightPageText = ""
         wordResults = []
         errorMessage = nil
+        hiddenWordIds = []
+    }
+
+    func masterWord(_ wordResult: WordResult) {
+        Task {
+            do {
+                try await apiService.masterWord(wordResult.word, difficulty: wordResult.difficulty)
+                await MainActor.run {
+                    hiddenWordIds.insert(wordResult.id)
+                }
+            } catch {
+                print("Failed to master word: \(error)")
+            }
+        }
+    }
+
+    func saveWord(_ wordResult: WordResult) {
+        Task {
+            do {
+                try await apiService.saveWord(wordResult.word, difficulty: wordResult.difficulty)
+                await MainActor.run {
+                    hiddenWordIds.insert(wordResult.id)
+                }
+            } catch {
+                print("Failed to save word: \(error)")
+            }
+        }
     }
 }
 
 struct WordCardView: View {
     let wordResult: WordResult
+    let onMaster: () -> Void
+    let onSave: () -> Void
 
     var body: some View {
         VStack(alignment: .leading, spacing: 12) {
@@ -232,6 +286,38 @@ struct WordCardView: View {
             .padding()
             .background(Color.blue.opacity(0.1))
             .cornerRadius(8)
+
+            // Action buttons
+            HStack(spacing: 12) {
+                Button(action: onMaster) {
+                    HStack {
+                        Image(systemName: "checkmark.circle.fill")
+                        Text("Master")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.green)
+                    .cornerRadius(8)
+                }
+
+                Button(action: onSave) {
+                    HStack {
+                        Image(systemName: "bookmark.fill")
+                        Text("Save for Later")
+                    }
+                    .font(.subheadline)
+                    .fontWeight(.semibold)
+                    .foregroundColor(.white)
+                    .frame(maxWidth: .infinity)
+                    .padding(.vertical, 10)
+                    .background(Color.orange)
+                    .cornerRadius(8)
+                }
+            }
+            .padding(.top, 4)
         }
         .padding()
         .background(Color(UIColor.secondarySystemGroupedBackground))

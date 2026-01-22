@@ -26,7 +26,7 @@ struct AnalyzeResponse: Codable {
 class APIService {
     // Change this to your Mac's local IP address when testing on device
     // Find it with: System Preferences → Network → your WiFi → IP address
-    private let baseURL = "http://192.168.86.59:5000"
+    private let baseURL = "http://10.0.0.116:5000"
 
     func analyzeText(_ text: String) async throws -> [WordResult] {
         guard let url = URL(string: "\(baseURL)/analyze_text") else {
@@ -61,6 +61,46 @@ class APIService {
             return (response as? HTTPURLResponse)?.statusCode == 200
         } catch {
             return false
+        }
+    }
+
+    func masterWord(_ word: String, difficulty: Double) async throws {
+        guard let url = URL(string: "\(baseURL)/master_word") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["word": word, "difficulty": difficulty]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+    }
+
+    func saveWord(_ word: String, difficulty: Double) async throws {
+        guard let url = URL(string: "\(baseURL)/save_word") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: Any] = ["word": word, "difficulty": difficulty]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (_, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
         }
     }
 }
