@@ -7,13 +7,112 @@
 
 import SwiftUI
 
+// MARK: - Main Tab View
+
+struct ContentView: View {
+    var body: some View {
+        TabView {
+            HomeView()
+                .tabItem {
+                    Image(systemName: "house.fill")
+                    Text("Home")
+                }
+
+            CookieJarView()
+                .tabItem {
+                    Image(systemName: "cup.and.saucer.fill")
+                    Text("Cookie Jar")
+                }
+
+            AboutView()
+                .tabItem {
+                    Image(systemName: "info.circle.fill")
+                    Text("About")
+                }
+        }
+    }
+}
+
+// MARK: - Home View
+
+struct HomeView: View {
+    @State private var showScan = false
+
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 30) {
+                Spacer()
+
+                Text("ClairText")
+                    .font(.largeTitle)
+                    .bold()
+
+                Spacer()
+
+                Text("Ready to learn?")
+                    .font(.title2)
+                    .foregroundColor(.secondary)
+
+                Button(action: {
+                    showScan = true
+                }) {
+                    Label("Scan Pages", systemImage: "camera.fill")
+                        .font(.headline)
+                        .foregroundColor(.white)
+                        .padding()
+                        .padding(.horizontal, 20)
+                        .background(Color.blue)
+                        .cornerRadius(10)
+                }
+
+                Spacer()
+                Spacer()
+            }
+            .navigationDestination(isPresented: $showScan) {
+                ScanView()
+            }
+        }
+    }
+}
+
+// MARK: - Cookie Jar View (Placeholder)
+
+struct CookieJarView: View {
+    var body: some View {
+        VStack {
+            Text("Cookie Jar")
+                .font(.largeTitle)
+                .bold()
+            Text("Coming soon...")
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - About View (Placeholder)
+
+struct AboutView: View {
+    var body: some View {
+        VStack {
+            Text("About")
+                .font(.largeTitle)
+                .bold()
+            Text("Coming soon...")
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - Scan View (Capture Flow)
+
 enum CaptureStep {
     case capturingLeft
     case capturingRight
     case showingResults
 }
 
-struct ContentView: View {
+struct ScanView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var currentStep: CaptureStep = .capturingLeft
     @State private var leftPageImage: UIImage?
     @State private var rightPageImage: UIImage?
@@ -60,8 +159,8 @@ struct ContentView: View {
 
     var leftPageView: some View {
         VStack(spacing: 20) {
-            Text("ClairText")
-                .font(.largeTitle)
+            Text("Capture Left Page")
+                .font(.title2)
                 .bold()
 
             if isProcessing {
@@ -70,7 +169,7 @@ struct ContentView: View {
                 Button(action: {
                     showCamera = true
                 }) {
-                    Label("Capture Left Page", systemImage: "camera.fill")
+                    Label("Open Camera", systemImage: "camera.fill")
                         .font(.headline)
                         .foregroundColor(.white)
                         .padding()
@@ -156,7 +255,7 @@ struct ContentView: View {
                 }
 
                 Button(action: {
-                    startOver()
+                    dismiss()
                 }) {
                     Label("Proceed", systemImage: "arrow.right")
                         .font(.headline)
