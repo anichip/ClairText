@@ -43,9 +43,15 @@ struct HomeView: View {
             VStack(spacing: 30) {
                 Spacer()
 
-                Text("ClairText")
-                    .font(.largeTitle)
-                    .bold()
+                HStack(spacing: 12) {
+                    Image(systemName: "book.fill")
+                        .font(.largeTitle)
+                        .foregroundColor(.blue)
+
+                    Text("ClairText")
+                        .font(.largeTitle)
+                        .bold()
+                }
 
                 Spacer()
 
@@ -89,16 +95,148 @@ struct CookieJarView: View {
     }
 }
 
-// MARK: - About View (Placeholder)
+// MARK: - About View
 
 struct AboutView: View {
     var body: some View {
-        VStack {
-            Text("About")
-                .font(.largeTitle)
-                .bold()
-            Text("Coming soon...")
+        NavigationView {
+            ScrollView {
+                VStack(spacing: 24) {
+                    // App Icon and Title
+                    VStack(spacing: 12) {
+                        Image(systemName: "book.fill")
+                            .font(.system(size: 80))
+                            .foregroundColor(.blue)
+
+                        Text("ClairText")
+                            .font(.largeTitle)
+                            .fontWeight(.bold)
+
+                        Text("Version 1.0")
+                            .font(.subheadline)
+                            .foregroundColor(.secondary)
+                    }
+                    .padding(.top, 20)
+
+                    // Developer Info
+                    InfoSection(title: "Developer") {
+                        Text("Built with enthusiasm for computer vision, AI, and reading.")
+                            .font(.body)
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    // How It Works
+                    InfoSection(title: "How It Works") {
+                        VStack(alignment: .leading, spacing: 12) {
+                            FeatureRow(
+                                icon: "camera.fill",
+                                title: "Scan your book pages",
+                                description: "Capture left and right pages with your camera"
+                            )
+
+                            FeatureRow(
+                                icon: "text.magnifyingglass",
+                                title: "AI finds complex words",
+                                description: "OCR extracts text and identifies vocabulary"
+                            )
+
+                            FeatureRow(
+                                icon: "lightbulb.fill",
+                                title: "Learn with Feynman examples",
+                                description: "Simple explanations that make words stick"
+                            )
+
+                            FeatureRow(
+                                icon: "checkmark.circle.fill",
+                                title: "Master words to your Cookie Jar",
+                                description: "Track your vocabulary growth over time"
+                            )
+                        }
+                    }
+
+                    // Technical Details
+                    InfoSection(title: "Technology") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            TechRow(label: "Frontend", value: "Swift")
+                            TechRow(label: "Backend", value: "Flask")
+                            TechRow(label: "Database", value: "PostgreSQL")
+                            TechRow(label: "AI", value: "Claude Haiku")
+                            TechRow(label: "OCR", value: "Vision Framework")
+                        }
+                    }
+
+                    Spacer(minLength: 40)
+                }
+                .padding()
+            }
+            .navigationTitle("About")
+        }
+    }
+}
+
+// MARK: - Supporting Views
+
+struct InfoSection<Content: View>: View {
+    let title: String
+    let content: Content
+
+    init(title: String, @ViewBuilder content: () -> Content) {
+        self.title = title
+        self.content = content()
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text(title)
+                .font(.title2)
+                .fontWeight(.semibold)
+
+            content
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding()
+        .background(Color(UIColor.secondarySystemGroupedBackground))
+        .cornerRadius(12)
+    }
+}
+
+struct FeatureRow: View {
+    let icon: String
+    let title: String
+    let description: String
+
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Image(systemName: icon)
+                .font(.title2)
+                .foregroundColor(.blue)
+                .frame(width: 24)
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .fontWeight(.medium)
+
+                Text(description)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+        }
+    }
+}
+
+struct TechRow: View {
+    let label: String
+    let value: String
+
+    var body: some View {
+        HStack {
+            Text(label)
                 .foregroundColor(.secondary)
+
+            Spacer()
+
+            Text(value)
+                .fontWeight(.medium)
         }
     }
 }
