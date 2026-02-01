@@ -610,6 +610,7 @@ struct ScanView: View {
                 try await apiService.masterWord(wordResult.word, difficulty: wordResult.difficulty)
                 await MainActor.run {
                     hiddenWordIds.insert(wordResult.id)
+                    checkAllDone()
                 }
             } catch {
                 print("Failed to master word: \(error)")
@@ -623,9 +624,19 @@ struct ScanView: View {
                 try await apiService.saveWord(wordResult.word, difficulty: wordResult.difficulty)
                 await MainActor.run {
                     hiddenWordIds.insert(wordResult.id)
+                    checkAllDone()
                 }
             } catch {
                 print("Failed to save word: \(error)")
+            }
+        }
+    }
+
+    func checkAllDone() {
+        let allHidden = wordResults.allSatisfy { hiddenWordIds.contains($0.id) }
+        if allHidden && !wordResults.isEmpty {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                dismiss()
             }
         }
     }
