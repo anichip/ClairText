@@ -20,7 +20,7 @@ struct ContentView: View {
 
             CookieJarView()
                 .tabItem {
-                    Image(systemName: "cup.and.saucer.fill")
+                    Image(systemName: "chart.bar.fill")
                     Text("Cookie Jar")
                 }
 
@@ -81,17 +81,161 @@ struct HomeView: View {
     }
 }
 
-// MARK: - Cookie Jar View (Placeholder)
+// MARK: - Cookie Jar View
 
 struct CookieJarView: View {
+    @State private var masteredCount: Int = 0
+    @State private var savedCount: Int = 0
+    @State private var masteredWords: [StoredWord] = []
+    @State private var savedWords: [StoredWord] = []
+
+    private let apiService = APIService()
+
     var body: some View {
-        VStack {
-            Text("Cookie Jar")
-                .font(.largeTitle)
-                .bold()
-            Text("Coming soon...")
-                .foregroundColor(.secondary)
+        NavigationStack {
+            VStack(spacing: 24) {
+                Spacer()
+
+                // Cookie Jar graphic
+                NavigationLink(destination: MasteredWordsView(words: masteredWords)) {
+                    ZStack {
+                        // Jar body
+                        VStack(spacing: 0) {
+                            // Lid
+                            RoundedRectangle(cornerRadius: 6)
+                                .fill(Color.brown.opacity(0.7))
+                                .frame(width: 100, height: 20)
+
+                            // Jar
+                            RoundedRectangle(cornerRadius: 16)
+                                .fill(Color.brown.opacity(0.15))
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 16)
+                                        .stroke(Color.brown.opacity(0.4), lineWidth: 2)
+                                )
+                                .frame(width: 120, height: 150)
+                                .overlay(
+                                    // Cookies inside jar
+                                    VStack(spacing: 4) {
+                                        if masteredCount >= 3 {
+                                            Text("🍪🍪🍪")
+                                                .font(.title2)
+                                        }
+                                        if masteredCount >= 2 {
+                                            Text("🍪🍪")
+                                                .font(.title2)
+                                        }
+                                        if masteredCount >= 1 {
+                                            Text("🍪")
+                                                .font(.title2)
+                                        }
+                                    }
+                                    .padding(.top, 20)
+                                )
+                        }
+
+                        // Post-it note
+                        Text("🍪\(masteredCount)")
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .padding(10)
+                            .background(Color.yellow)
+                            .cornerRadius(4)
+                            .shadow(color: .black.opacity(0.2), radius: 2, x: 1, y: 1)
+                            .rotationEffect(.degrees(-8))
+                            .offset(x: 65, y: -70)
+                    }
+                }
+                .buttonStyle(.plain)
+
+                Text("Tap the jar to see your words")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+
+                Spacer()
+
+                // Saved for Later bar
+                NavigationLink(destination: SavedWordsView(words: savedWords)) {
+                    HStack {
+                        Image(systemName: "bookmark.fill")
+                        Text("Saved for Later")
+                            .fontWeight(.semibold)
+                        Spacer()
+                        Text("\(savedCount)")
+                            .fontWeight(.bold)
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 4)
+                            .background(Color.white.opacity(0.3))
+                            .cornerRadius(12)
+                    }
+                    .foregroundColor(.white)
+                    .padding()
+                    .background(Color.orange)
+                    .cornerRadius(12)
+                }
+                .padding(.horizontal)
+                .padding(.bottom, 20)
+            }
+            .navigationTitle("Cookie Jar")
+            .onAppear {
+                fetchWords()
+            }
         }
+    }
+
+    func fetchWords() {
+        Task {
+            do {
+                let mastered = try await apiService.getMasteredWords()
+                let saved = try await apiService.getSavedWords()
+                await MainActor.run {
+                    masteredWords = mastered
+                    masteredCount = mastered.count
+                    savedWords = saved
+                    savedCount = saved.count
+                }
+            } catch {
+                print("Failed to fetch words: \(error)")
+            }
+        }
+    }
+}
+
+// MARK: - Mastered Words View
+
+struct MasteredWordsView: View {
+    let words: [StoredWord]
+
+    var body: some View {
+        List(words) { word in
+            HStack {
+                Text(word.word)
+                    .fontWeight(.medium)
+                Spacer()
+                Text("\(Int(word.difficulty * 100))%")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Mastered Words")
+    }
+}
+
+// MARK: - Saved Words View
+
+struct SavedWordsView: View {
+    let words: [StoredWord]
+
+    var body: some View {
+        List(words) { word in
+            HStack {
+                Text(word.word)
+                    .fontWeight(.medium)
+                Spacer()
+                Text("\(Int(word.difficulty * 100))%")
+                    .foregroundColor(.secondary)
+            }
+        }
+        .navigationTitle("Saved for Later")
     }
 }
 
@@ -158,9 +302,9 @@ struct AboutView: View {
                     InfoSection(title: "Technology") {
                         VStack(alignment: .leading, spacing: 8) {
                             TechRow(label: "Frontend", value: "Swift")
-                            TechRow(label: "Backend", value: "Flask")
+                            TechRow(label: "Backend", value: "FlaskAPI")
                             TechRow(label: "Database", value: "PostgreSQL")
-                            TechRow(label: "AI", value: "Claude Haiku")
+                            TechRow(label: "AI", value: "Claude Haiku 3.5")
                             TechRow(label: "OCR", value: "Vision Framework")
                         }
                     }

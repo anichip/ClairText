@@ -23,6 +23,20 @@ struct AnalyzeResponse: Codable {
     let words: [WordResult]
 }
 
+struct StoredWord: Codable, Identifiable {
+    let id = UUID()
+    let word: String
+    let difficulty: Double
+
+    enum CodingKeys: String, CodingKey {
+        case word, difficulty
+    }
+}
+
+struct StoredWordsResponse: Codable {
+    let words: [StoredWord]
+}
+
 class APIService {
     // Change this to your Mac's local IP address when testing on device
     // Find it with: System Preferences → Network → your WiFi → IP address
@@ -82,6 +96,38 @@ class APIService {
               httpResponse.statusCode == 200 else {
             throw URLError(.badServerResponse)
         }
+    }
+
+    func getMasteredWords() async throws -> [StoredWord] {
+        guard let url = URL(string: "\(baseURL)/get_mastered_words") else {
+            throw URLError(.badURL)
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+
+        let decoded = try JSONDecoder().decode(StoredWordsResponse.self, from: data)
+        return decoded.words
+    }
+
+    func getSavedWords() async throws -> [StoredWord] {
+        guard let url = URL(string: "\(baseURL)/get_saved_words") else {
+            throw URLError(.badURL)
+        }
+
+        let (data, response) = try await URLSession.shared.data(from: url)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              httpResponse.statusCode == 200 else {
+            throw URLError(.badServerResponse)
+        }
+
+        let decoded = try JSONDecoder().decode(StoredWordsResponse.self, from: data)
+        return decoded.words
     }
 
     func saveWord(_ word: String, difficulty: Double) async throws {
