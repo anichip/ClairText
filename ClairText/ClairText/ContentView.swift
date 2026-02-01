@@ -207,13 +207,30 @@ struct MasteredWordsView: View {
     let words: [StoredWord]
 
     var body: some View {
-        List(words) { word in
-            HStack {
-                Text(word.word)
-                    .fontWeight(.medium)
-                Spacer()
-                Text("\(Int(word.difficulty * 100))%")
-                    .foregroundColor(.secondary)
+        Group {
+            if words.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "tray")
+                        .font(.system(size: 40))
+                        .foregroundColor(.secondary)
+                    Text("No words mastered yet.")
+                        .font(.headline)
+                    Text("Scan some pages and start building your Cookie Jar!")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+            } else {
+                List(words) { word in
+                    HStack {
+                        Text(word.word)
+                            .fontWeight(.medium)
+                        Spacer()
+                        Text("\(Int(word.difficulty * 100))%")
+                            .foregroundColor(.secondary)
+                    }
+                }
             }
         }
         .navigationTitle("Mastered Words")
@@ -223,19 +240,60 @@ struct MasteredWordsView: View {
 // MARK: - Saved Words View
 
 struct SavedWordsView: View {
-    let words: [StoredWord]
+    @State var words: [StoredWord]
+    private let apiService = APIService()
 
     var body: some View {
-        List(words) { word in
-            HStack {
-                Text(word.word)
-                    .fontWeight(.medium)
-                Spacer()
-                Text("\(Int(word.difficulty * 100))%")
-                    .foregroundColor(.secondary)
+        Group {
+            if words.isEmpty {
+                VStack(spacing: 12) {
+                    Image(systemName: "bookmark")
+                        .font(.system(size: 40))
+                        .foregroundColor(.secondary)
+                    Text("No saved words yet.")
+                        .font(.headline)
+                    Text("Save words you want to revisit later.")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal)
+                }
+            } else {
+                List {
+                    ForEach(words) { word in
+                        HStack {
+                            Text(word.word)
+                                .fontWeight(.medium)
+                            Spacer()
+                            Text("\(Int(word.difficulty * 100))%")
+                                .foregroundColor(.secondary)
+                            Button(action: {
+                                masterSavedWord(word)
+                            }) {
+                                Image(systemName: "checkmark.circle.fill")
+                                    .foregroundColor(.green)
+                                    .font(.title3)
+                            }
+                            .buttonStyle(.plain)
+                        }
+                    }
+                }
             }
         }
         .navigationTitle("Saved for Later")
+    }
+
+    func masterSavedWord(_ word: StoredWord) {
+        Task {
+            do {
+                try await apiService.masterWord(word.word, difficulty: word.difficulty)
+                await MainActor.run {
+                    words.removeAll { $0.id == word.id }
+                }
+            } catch {
+                print("Failed to master saved word: \(error)")
+            }
+        }
     }
 }
 
@@ -243,7 +301,7 @@ struct SavedWordsView: View {
 
 struct AboutView: View {
     var body: some View {
-        NavigationView {
+        NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
                     // App Icon and Title
