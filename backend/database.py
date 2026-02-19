@@ -3,16 +3,20 @@ Database module for ClairText
 Handles connections and operations for mastered and saved words
 """
 
+import os
 import psycopg2
 from psycopg2.extras import RealDictCursor
 from contextlib import contextmanager
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Database connection parameters
 DB_CONFIG = {
-    'dbname': 'clairtext',
-    'user': 'r3alistic',  # Default macOS user
-    'host': 'localhost',
-    'port': 5432
+    'dbname': os.getenv('DB_NAME', 'clairtext'),
+    'user': os.getenv('DB_USER'),
+    'host': os.getenv('DB_HOST', 'localhost'),
+    'port': int(os.getenv('DB_PORT', '5432'))
 }
 
 @contextmanager
